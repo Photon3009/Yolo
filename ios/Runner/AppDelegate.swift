@@ -8,7 +8,7 @@ import MLKit
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     private var objectDetectionHelper: ObjectDetectionHelper?
-    private let channel = "com.example.flick_itdetection"
+    private let channel = "com.example.flick_it/detection"
     
     override func application(
         _ application: UIApplication,

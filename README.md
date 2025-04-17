@@ -23,7 +23,7 @@ A Flutter application that performs real-time object detection using native ML K
 
 ### Prerequisites
 
-- Flutter SDK (latest version)
+- Flutter SDK (latest version) - [Install Flutter](https://flutter.dev/docs/get-started/install)
 - Android Studio / Xcode
 - ML Kit dependencies
 
@@ -35,13 +35,13 @@ A Flutter application that performs real-time object detection using native ML K
 dependencies {
     // ML Kit Object Detection
     implementation 'com.google.mlkit:object-detection:17.0.0'
-    
+
     // CameraX
     def camerax_version = "1.2.3"
     implementation "androidx.camera:camera-core:$camerax_version"
     implementation "androidx.camera:camera-camera2:$camerax_version"
     implementation "androidx.camera:camera-lifecycle:$camerax_version"
-    implementation "androidx.camera:camera-view:1.2.3"
+    implementation "androidx.camera:camera-view:$camerax_version"
 }
 ```
 
@@ -51,7 +51,7 @@ dependencies {
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" />
-    
+
     <!-- Rest of your manifest file -->
 </manifest>
 ```
@@ -70,10 +70,10 @@ dependencies {
 ```ruby
 target 'Runner' do
   # ...
-  
+
   # Add ML Kit dependencies
   pod 'GoogleMLKit/ObjectDetection', '~> 3.2.0'
-  
+
   # ...
 end
 ```
@@ -107,11 +107,13 @@ flutter pub get
 ### Flutter Layer
 
 The Flutter layer handles:
+
 - UI components for displaying the camera feed
 - Painting detected object bounding boxes on the screen
 - Managing the platform channels for communication with native code
 
 Platform channels are used to:
+
 - Start/stop the object detection process
 - Retrieve detection results from native code
 - Configure the camera preview
@@ -119,6 +121,7 @@ Platform channels are used to:
 ### Android Implementation
 
 The Android side uses:
+
 - CameraX API for camera preview and image analysis
 - ML Kit's ObjectDetector for real-time object detection
 - Custom View for displaying camera preview in Flutter
@@ -126,6 +129,7 @@ The Android side uses:
 ### iOS Implementation
 
 The iOS side uses:
+
 - AVFoundation for camera capture and preview
 - ML Kit's ObjectDetector for real-time object detection
 - Custom UIView for displaying camera preview in Flutter
@@ -138,6 +142,54 @@ The iOS side uses:
 4. The native code processes each frame from the camera to detect objects using ML Kit.
 5. Detection results are passed back to Flutter through the platform channel.
 6. Flutter renders bounding boxes and labels on top of the camera preview.
+
+## Implementation Explanation
+
+The implementation follows three main layers:
+
+1. **Flutter UI Layer**:
+
+   - Handles user interface elements
+   - Manages permission requests
+   - Renders bounding boxes using CustomPaint
+   - Communicates with native platforms
+
+2. **Platform Channel Bridge**:
+
+   - Establishes bidirectional communication between Flutter and native code
+   - Uses MethodChannel for function calls
+   - Passes binary data for image processing
+
+3. **Native Platform Layer**:
+   - Android: Uses Kotlin with CameraX and ML Kit
+   - iOS: Uses Swift with AVFoundation and ML Kit
+   - Processes camera frames in real-time
+   - Returns detection results to Flutter
+
+The key challenge was synchronizing the camera feed display with the detection results while maintaining good performance.
+
+## Issues and Roadblocks
+
+During development, several challenges were encountered:
+
+1. **Performance Bottlenecks**:
+
+   - Processing every frame caused lag on lower-end devices
+   - Solution: Implemented frame skipping to process every n-th frame
+
+2. **Platform View Synchronization**:
+
+   - Camera preview and detection overlay were sometimes misaligned
+   - Solution: Used proper coordinate transformation between native and Flutter UI
+
+3. **Memory Management**:
+
+   - Continuous image processing caused memory leaks on iOS
+   - Solution: Implemented proper disposal of detection objects and camera resources
+
+4. **UI Thread Blocking**:
+   - Detection processing blocked the UI thread
+   - Solution: Moved detection to background threads with proper synchronization
 
 ## Limitations
 
@@ -153,9 +205,32 @@ The iOS side uses:
 - **Black screen**: This could indicate issues with camera initialization. Check the console logs for errors.
 - **Slow detection**: Try reducing the frequency of detection updates to improve performance.
 
-## Future Improvements
+## Resources
 
-- Add support for switching between front and back cameras
-- Implement object tracking for smoother UI updates
-- Allow saving detected images to the gallery
-- Add custom ML models for specific use cases
+### Android Resources
+
+- [ML Kit Object Detection for Android (Official Documentation)](https://developers.google.com/ml-kit/vision/object-detection/android)
+- [CameraX Documentation](https://developer.android.com/training/camerax)
+- [Android ML Kit API Reference](https://developers.google.com/android/reference/com/google/mlkit/vision/objects/ObjectDetector)
+
+### iOS Resources
+
+- [ML Kit Object Detection for iOS (Official Documentation)](https://developers.google.com/ml-kit/vision/object-detection/ios)
+- [AVFoundation Documentation](https://developer.apple.com/documentation/avfoundation/cameras_and_media_capture)
+- [iOS ML Kit API Reference](https://developers.google.com/ml-kit/reference/ios)
+
+### Flutter Integration Resources
+
+- [Flutter Platform Channels Documentation](https://docs.flutter.dev/platform-integration/platform-channels)
+- [Method Channels Documentation](https://api.flutter.dev/flutter/services/MethodChannel-class.html)
+- [Platform Views Documentation](https://docs.flutter.dev/platform-integration/platform-views)
+- [Flutter Platform Channels Integration Guide](https://docs.flutter.dev/platform-integration/platform-channels?tab=type-mappings-kotlin-tab)
+
+### ML Kit Model Information
+
+- [ML Kit Pre-trained Models Documentation](https://developers.google.com/ml-kit/vision/object-detection/custom-models)
+- [Model Specifications](https://developers.google.com/ml-kit/vision/object-detection/android#using-the-default-on-device-model)
+
+### Reference Projects
+
+- [Flutter Body Detection Example](https://github.com/0x48lab/flutter_body_detection)
